@@ -6,9 +6,11 @@ import com.airbnb.exceptions.ResourceNotFoundException;
 import com.airbnb.exceptions.UserExistsException;
 import com.airbnb.payload.AppUserDto;
 import com.airbnb.payload.AppUserResponse;
+import com.airbnb.payload.JWTToken;
 import com.airbnb.payload.LoginDto;
 import com.airbnb.repository.AppUserRepository;
 import com.airbnb.service.AppUserService;
+import com.airbnb.service.JWTService;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
@@ -20,10 +22,12 @@ public class AppUserServiceImpl implements AppUserService {
 
     private AppUserRepository appUserRepository;
     private ModelMapper mapper;
+    private JWTService jwtService;
 
-    public AppUserServiceImpl(AppUserRepository appUserRepository, ModelMapper mapper) {
+    public AppUserServiceImpl(AppUserRepository appUserRepository, ModelMapper mapper, JWTService jwtService) {
         this.appUserRepository = appUserRepository;
         this.mapper = mapper;
+        this.jwtService = jwtService;
     }
 
     @Override
@@ -51,17 +55,22 @@ public class AppUserServiceImpl implements AppUserService {
     }
 
     @Override
-    public boolean verifyUser(LoginDto loginDto) {
+    public JWTToken verifyUser(LoginDto loginDto) {
         Optional<AppUser> byUsernameOrEmail = appUserRepository.findByUsernameOrEmail(loginDto.getUsername(), loginDto.getEmail());
         if (byUsernameOrEmail.isPresent()) {
             AppUser user = byUsernameOrEmail.get();
             boolean checkpw = BCrypt.checkpw(loginDto.getPassword(), user.getPassword());
             if (!checkpw){
                 throw new PasswordNotMatchException("Please Enter valid password");
+            }else {
+                JWTToken token = new JWTToken();
+                token.setType("JWT");
+                String generatedToken = jwtService.generateToken(user);
+                token.setToken(generatedToken);
+                return token;
             }
-            return checkpw;
         }
-        return false;
+        return null;
     }
 
 

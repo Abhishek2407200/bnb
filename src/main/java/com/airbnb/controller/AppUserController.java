@@ -2,6 +2,7 @@ package com.airbnb.controller;
 
 import com.airbnb.payload.AppUserDto;
 import com.airbnb.payload.AppUserResponse;
+import com.airbnb.payload.JWTToken;
 import com.airbnb.payload.LoginDto;
 import com.airbnb.service.AppUserService;
 import jakarta.validation.Valid;
@@ -9,10 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("api/v1/auth")
@@ -35,11 +33,16 @@ public class AppUserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> verifyLogin(@RequestBody LoginDto loginDto){
-        boolean status = service.verifyUser(loginDto);
-        if (status){
-            return new ResponseEntity<>("Login Successfully", HttpStatus.OK);
+    public ResponseEntity<?> verifyLogin(@RequestBody LoginDto loginDto){
+        JWTToken token = service.verifyUser(loginDto);
+        if (token != null){
+            return new ResponseEntity<>(token, HttpStatus.OK);
         }
         return new ResponseEntity<>("Invalid UserName And Password", HttpStatus.UNAUTHORIZED);
+    }
+
+    @GetMapping
+    public String dummy(){
+        return "Welcome to Air-Bnb!";
     }
 }
