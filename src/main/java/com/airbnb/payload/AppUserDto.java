@@ -24,4 +24,6 @@ public class AppUserDto {
     @NotEmpty
     @Size(min = 8, message = "Password should be more than 8 characters")
     private String password;
+
+    private String role;
 }

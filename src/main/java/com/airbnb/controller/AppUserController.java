@@ -21,16 +21,43 @@ public class AppUserController {
         this.service = service;
     }
 
-    @PostMapping
-    public ResponseEntity<?> signUp(@Valid @RequestBody AppUserDto dto, BindingResult result){
+    @PostMapping("/createUser")
+    public ResponseEntity<?> signUpAsUser(@Valid @RequestBody AppUserDto dto, BindingResult result){
         if (result.hasErrors()){
             return new ResponseEntity<>(result.getFieldError().getDefaultMessage(),HttpStatus.BAD_REQUEST);
         }
         String hashpw = BCrypt.hashpw(dto.getPassword(), BCrypt.gensalt(10));
         dto.setPassword(hashpw);
+        dto.setRole("ROLE_USER");
         AppUserResponse user = service.createUser(dto);
         return new ResponseEntity<>(user, HttpStatus.CREATED);
     }
+
+    @PostMapping("/createpropertyowner")
+    public ResponseEntity<?> signUpAsPropertyOwner(@Valid @RequestBody AppUserDto dto, BindingResult result){
+        if (result.hasErrors()){
+            return new ResponseEntity<>(result.getFieldError().getDefaultMessage(),HttpStatus.BAD_REQUEST);
+        }
+        String hashpw = BCrypt.hashpw(dto.getPassword(), BCrypt.gensalt(10));
+        dto.setPassword(hashpw);
+        dto.setRole("ROLE_OWNER");
+        AppUserResponse user = service.createUser(dto);
+        return new ResponseEntity<>(user, HttpStatus.CREATED);
+    }
+
+    @PostMapping("/createpropertymanager")
+    public ResponseEntity<?> signUpAsPropertyManager(@Valid @RequestBody AppUserDto dto, BindingResult result){
+        if (result.hasErrors()){
+            return new ResponseEntity<>(result.getFieldError().getDefaultMessage(),HttpStatus.BAD_REQUEST);
+        }
+        String hashpw = BCrypt.hashpw(dto.getPassword(), BCrypt.gensalt(10));
+        dto.setPassword(hashpw);
+        dto.setRole("ROLE_MANAGER");
+        AppUserResponse user = service.createUser(dto);
+        return new ResponseEntity<>(user, HttpStatus.CREATED);
+    }
+
+
 
     @PostMapping("/login")
     public ResponseEntity<?> verifyLogin(@RequestBody LoginDto loginDto){
@@ -41,8 +68,4 @@ public class AppUserController {
         return new ResponseEntity<>("Invalid UserName And Password", HttpStatus.UNAUTHORIZED);
     }
 
-    @GetMapping
-    public String dummy(){
-        return "Welcome to Air-Bnb!";
-    }
 }
